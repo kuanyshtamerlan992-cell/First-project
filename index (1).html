@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Луна сегодня</title>
+<meta name="description" content="Какая сегодня фаза Луны, сколько до полнолуния и как наблюдать спутник Земли.">
+<style>
+:root{
+  --bg:#101a33; --bg2:#182647; --ink:#e9edf6; --dim:#9aa7c4; --lit:#f3efe0; --shade:#0a1226; --amber:#e3b25c; --line:#2b3b66;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--amber)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+header.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+.logo{font-family:var(--serif);font-size:1.25rem;letter-spacing:.02em}
+nav a{margin-left:22px;color:var(--dim);text-decoration:none}
+nav a:hover{color:var(--ink)}
+
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:40px 0 80px}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.05;margin:0 0 18px}
+.hero p.lead{color:var(--dim);max-width:34ch;margin:0 0 28px}
+.stats{display:flex;gap:36px;flex-wrap:wrap;margin:0 0 28px}
+.stats div{border-left:2px solid var(--amber);padding-left:14px}
+.stats b{display:block;font-family:var(--serif);font-size:1.7rem;font-weight:400}
+.stats span{color:var(--dim);font-size:.9rem}
+label{display:block;color:var(--dim);font-size:.9rem;margin-bottom:6px}
+input[type=date]{background:var(--bg2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;color-scheme:dark}
+button{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer;margin-left:6px}
+button:hover{border-color:var(--amber)}
+.moonbox{display:flex;justify-content:center}
+#bigMoon{width:min(100%,440px);height:auto;filter:drop-shadow(0 0 60px rgba(243,239,224,.18));animation:rise 1.4s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+section{padding:64px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,4vw,2.4rem);margin:0 0 12px}
+.sub{color:var(--dim);max-width:52ch;margin:0 0 36px}
+.phases{display:flex;justify-content:space-between;gap:12px;overflow-x:auto;padding-bottom:8px}
+.phase{flex:1 0 96px;text-align:center}
+.phase svg{width:72px;height:72px}
+.phase.now svg{outline:2px solid var(--amber);outline-offset:6px;border-radius:50%}
+.phase small{display:block;margin-top:10px;color:var(--dim);font-size:.85rem;line-height:1.3}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.cols h3{font-family:var(--serif);font-weight:400;font-size:1.3rem;margin:0 0 8px}
+.cols p{margin:0;color:var(--dim)}
+.facts{list-style:none;margin:0;padding:0;max-width:640px}
+.facts li{display:flex;justify-content:space-between;gap:24px;padding:14px 0;border-bottom:1px solid var(--line)}
+.facts li span:first-child{color:var(--dim)}
+footer{padding:36px 0 56px;color:var(--dim);font-size:.9rem;border-top:1px solid var(--line)}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr;gap:28px;padding-bottom:48px}
+  .moonbox{order:-1}
+  .cols{grid-template-columns:1fr;gap:28px}
+  nav a{margin-left:14px}
+}
+@media (prefers-reduced-motion:reduce){#bigMoon{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">Луна сегодня</div>
+    <nav><a href="#phases">Фазы</a><a href="#watch">Наблюдение</a><a href="#facts">Факты</a></nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1 id="phaseName">Считаем…</h1>
+        <p class="lead" id="lead"></p>
+        <div class="stats">
+          <div><b id="illum">—</b><span>освещено</span></div>
+          <div><b id="age">—</b><span>возраст Луны</span></div>
+          <div><b id="next">—</b><span>до полнолуния</span></div>
+        </div>
+        <label for="date">Посмотреть другую дату</label>
+        <input type="date" id="date"><button type="button" id="today">Сегодня</button>
+      </div>
+      <div class="moonbox"><svg id="bigMoon" viewBox="-100 -100 200 200" role="img" aria-label="Текущая фаза Луны"></svg></div>
+    </div>
+
+    <section id="phases">
+      <h2>Восемь фаз за 29,5 суток</h2>
+      <p class="sub">Луна не меняет форму: мы просто видим разную часть её освещённой стороны. Ниже — весь цикл, текущая фаза обведена.</p>
+      <div class="phases" id="phaseRow"></div>
+    </section>
+
+    <section id="watch">
+      <h2>Как наблюдать</h2>
+      <p class="sub">Телескоп не нужен. Хватит бинокля и получаса без городской подсветки.</p>
+      <div class="cols">
+        <div><h3>Серп</h3><p>Смотрите вскоре после заката или перед рассветом. Тёмную часть диска подсвечивает пепельный свет — отражённый от Земли.</p></div>
+        <div><h3>Четверть</h3><p>Лучшее время для рельефа. Вдоль границы света и тени тени кратеров длиннее всего, и видны горные цепи.</p></div>
+        <div><h3>Полнолуние</h3><p>Ярко, но плоско: теней почти нет. Зато видны светлые лучи вокруг кратеров и тёмные «моря».</p></div>
+      </div>
+    </section>
+
+    <section id="facts">
+      <h2>Коротко о Луне</h2>
+      <p class="sub">Несколько чисел, которые полезно помнить.</p>
+      <ul class="facts">
+        <li><span>Среднее расстояние до Земли</span><span>384 400 км</span></li>
+        <li><span>Диаметр</span><span>3 474 км</span></li>
+        <li><span>Синодический месяц</span><span>29,53 суток</span></li>
+        <li><span>Свет от Луны до Земли</span><span>около 1,3 с</span></li>
+        <li><span>Сила тяжести к земной</span><span>1/6</span></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>Фаза считается по среднему синодическому месяцу, точность до нескольких часов. Для северного полушария.</footer>
+</div>
+
+<script>
+(function(){
+  var SYN = 29.530588853;
+  var REF = Date.UTC(2000,0,6,18,14); // известное новолуние
+  var NAMES = ["Новолуние","Растущий серп","Первая четверть","Растущая Луна","Полнолуние","Убывающая Луна","Последняя четверть","Убывающий серп"];
+  var LEADS = [
+    "Луны на небе не видно: она между нами и Солнцем.",
+    "Тонкий серп над горизонтом после заката.",
+    "Освещена правая половина диска. Лучшее время для рельефа.",
+    "Почти круглая, но справа ещё виден срез.",
+    "Луна освещена полностью и светит всю ночь.",
+    "Диск начинает уменьшаться с правого края.",
+    "Освещена левая половина диска. Видна во второй половине ночи.",
+    "Узкий серп перед рассветом."
+  ];
+
+  function phaseOf(ms){
+    var days = (ms - REF) / 86400000;
+    var age = ((days % SYN) + SYN) % SYN;
+    return {age: age, p: age / SYN};
+  }
+
+  var uid = 0;
+  function moon(p, r){
+    var id = "g" + (uid++);
+    var q = p < 0.5 ? p : 1 - p;
+    var rx = Math.abs(Math.cos(2 * Math.PI * q)) * r;
+    var sweep = q < 0.25 ? 0 : 1;
+    var flip = p < 0.5 ? 1 : -1;
+    var d = "M0,-" + r + " A" + r + "," + r + " 0 0 1 0," + r + " A" + rx.toFixed(2) + "," + r + " 0 0 " + sweep + " 0,-" + r + "Z";
+    return '<defs><radialGradient id="' + id + '" cx=".4" cy=".35" r=".8">' +
+      '<stop offset="0" stop-color="#fffdf2"/><stop offset="1" stop-color="#d9d3bd"/></radialGradient></defs>' +
+      '<circle r="' + r + '" fill="#0a1226" stroke="#2b3b66" stroke-width="1"/>' +
+      '<g transform="scale(' + flip + ',1)"><path d="' + d + '" fill="url(#' + id + ')"/></g>';
+  }
+
+  function nameOf(p){ return Math.round(p * 8) % 8; }
+
+  function render(ms){
+    var s = phaseOf(ms), i = nameOf(s.p);
+    var illum = (1 - Math.cos(2 * Math.PI * s.p)) / 2;
+    var toFull = ((0.5 - s.p + 1) % 1) * SYN;
+    document.getElementById("bigMoon").innerHTML = moon(s.p, 90);
+    document.getElementById("phaseName").textContent = NAMES[i];
+    document.getElementById("lead").textContent = LEADS[i];
+    document.getElementById("illum").textContent = Math.round(illum * 100) + "%";
+    document.getElementById("age").textContent = Math.floor(s.age) + " сут.";
+    document.getElementById("next").textContent = toFull < 0.5 ? "сегодня" : Math.round(toFull) + " сут.";
+    var nodes = document.querySelectorAll(".phase");
+    for (var k = 0; k < nodes.length; k++) nodes[k].classList.toggle("now", k === i);
+  }
+
+  var row = document.getElementById("phaseRow"), html = "";
+  for (var k = 0; k < 8; k++){
+    html += '<div class="phase"><svg viewBox="-50 -50 100 100" aria-hidden="true">' + moon(k / 8, 46) + '</svg><small>' + NAMES[k] + '</small></div>';
+  }
+  row.innerHTML = html;
+
+  var input = document.getElementById("date");
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function fromInput(){
+    var v = input.value.split("-");
+    if (v.length !== 3) return Date.now();
+    return Date.UTC(+v[0], +v[1] - 1, +v[2], 12, 0);
+  }
+  input.value = todayStr();
+  input.addEventListener("change", function(){ render(fromInput()); });
+  document.getElementById("today").addEventListener("click", function(){
+    input.value = todayStr();
+    render(Date.now());
+  });
+  render(Date.now());
+})();
+</script>
+</body>
+</html>
